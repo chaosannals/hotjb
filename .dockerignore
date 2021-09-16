@@ -1,0 +1,5 @@
+/config/
+/*.env
+/docker-compose.yml
+/dockerfile
+/readme.md

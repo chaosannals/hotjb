@@ -1,0 +1,19 @@
+version: '3.8'
+
+services: 
+  hotjb-server:
+    image: chaosannals/hotjb:0.1.0
+    container_name: hotjb-server
+    ports: 
+      - 30000:30000
+    volumes:
+      - ./runtime:/app/runtime
+      - ./config/:/app/config
+    networks: 
+      - hotjb-net
+
+networks: 
+  hotjb-net:
+    name: hotjb-net
+    driver: bridge
+    
