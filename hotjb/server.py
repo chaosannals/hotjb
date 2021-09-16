@@ -1,14 +1,16 @@
+from time import time_ns
 from asyncio import sleep
 from aiohttp import web, ClientSession
 from loguru import logger
 from .worker import HotJBWorker
+from .transfer import HotJBTransfer
 
 class HotJBServer:
     '''
     分发服务端服务
     '''
 
-    def __init__(self, worker_count=6):
+    def __init__(self, worker_count=6, out_time=10.0):
         '''
         初始化，设置和生成 worker 池。
         '''
@@ -18,11 +20,13 @@ class HotJBServer:
             web.post('/tokenize', self.tokenize)
         ])
 
-        self.workers = []
+        self.workers : list[HotJBWorker] = []
         for i in range(worker_count):
             worker = HotJBWorker(30001 + i)
             self.workers.append(worker)
-            logger.debug(f'new worker {i}')
+            logger.info(f'{i} new worker {worker.port}')
+
+        self.out_time = out_time
 
     def ready(self):
         '''
@@ -31,7 +35,7 @@ class HotJBServer:
 
         for i, worker in enumerate(self.workers):
             worker.attach()
-            logger.debug(f'worker {i} attach')
+            logger.info(f'{i} worker {worker.port} attach')
         return self
         
 
@@ -40,9 +44,9 @@ class HotJBServer:
         关闭，回收 worker 。
         '''
 
-        for worker in self.workers:
+        for i, worker in enumerate(self.workers):
             worker.detach()
-            logger.debug(f'worker {worker.port} detach')
+            logger.info(f'{i} worker {worker.port} detach')
 
     async def transfer(self, port, data):
         '''
@@ -59,31 +63,40 @@ class HotJBServer:
                 }
                 return result
 
-    def dispatch(self):
+    async def dispatch(self) -> HotJBTransfer:
         '''
-        调度获取 worker
         '''
+
+        start_time = time_ns()
+        while True:
+            for worker in self.workers:
+                if worker.idle:
+                    end_time = time_ns()
+                    duration = (end_time - start_time) / 1000000000.0
+                    logger.info(f'transfer {duration:.5f}s: {worker.port}')
+                    return HotJBTransfer(worker)
+            end_time = time_ns()
+            duration = (end_time - start_time) / 1000000000.0
+            if duration > self.out_time:
+                break
+            await sleep(0.01)
+        return None
 
     async def tokenize(self, request):
         '''
         请求处理，分配 worker 并转发。
         '''
 
-        for i in range(100):
-            for worker in self.workers:
-                if worker.idle:
-                    worker.idle = False
-                    data = await request.json()
-                    logger.debug(f'transfer: {worker.port}')
-                    r = await self.transfer(worker.port, data)
-                    worker.idle = True
-                    return web.Response(
-                        status=r['status'],
-                        headers=r['headers'],
-                        body = r['content'],
-                    )
-            await sleep(0.1)
-            logger.warning(f'busy: {i}')
+        with await self.dispatch() as t:
+            if t != None:
+                data = await request.json()
+                r = await t.transfer(data)
+                return web.Response(
+                    status=r['status'],
+                    headers=r['headers'],
+                    body = r['content'],
+                )
+
         logger.warning(f'busy timeout')
         return web.Response(
             status=500,

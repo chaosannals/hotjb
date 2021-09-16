@@ -1,4 +1,6 @@
 /.*/
+/build/
+/dist/
 /runtime/
 /.env
 __pycache__

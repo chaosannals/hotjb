@@ -1,4 +1,5 @@
 import os
+import sys
 import asyncio
 from loguru import logger
 from dotenv import load_dotenv
@@ -13,9 +14,15 @@ async def main(loop):
     host = os.getenv('HOTJB_HOST', '0.0.0.0')
     port = os.getenv('HOTJB_PORT', 30000)
     worker_count = os.getenv('HOTJB_WORKER_COUNT', 5)
+    log_level = os.getenv('HOTJB_LOG_LEVEL', 'TRACE' if debug else 'INFO')
+    logger.remove()
+    logger.add(
+        sink=sys.stdout,
+        level='INFO'
+    )
     logger.add(
         'runtime/logs/{time}.log',
-        level='TRACE' if debug else 'INFO',
+        level=log_level,
         rotation='00:00',
         retention='7 days',
     )

@@ -2,7 +2,6 @@ import json
 import jieba
 from multiprocessing import Process
 from wsgiref.simple_server import make_server
-from loguru import logger
 
 class HotJBWorker:
     '''
@@ -52,25 +51,3 @@ class HotJBWorker:
 
         with make_server('127.0.0.1', self.port, self._work_respond) as httpd:
             httpd.serve_forever()
-
-class HotJBTask:
-    '''
-    '''
-
-    def __init__(self, worker: HotJBWorker):
-        '''
-        '''
-
-        self.worker = worker
-
-    def __enter__(self):
-        '''
-        '''
-
-        self.worker.idle = False
-
-    def __exit__(self, *args):
-        '''
-        '''
-
-        self.worker.idle = True
