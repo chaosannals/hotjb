@@ -1,4 +1,4 @@
-FROM python:3.8.5-slim-buster
+FROM python:3.9.7-slim-buster
 
 EXPOSE 30000
 VOLUME [ "/app/runtime", "/app/config" ]

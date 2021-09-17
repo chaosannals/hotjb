@@ -39,7 +39,8 @@ class HotJBWorker:
         content_length = int(environ.get('CONTENT_LENGTH', 0))
         content = environ.get('wsgi.input').read(content_length)
         data = json.loads(content)
-        result = list(jieba.cut(data['text'], use_paddle=True))
+        # result = list(jieba.cut(data['text'], use_paddle=True))
+        result = list(jieba.cut_for_search(data['text']))
         start_response('200 OK', [('Content-Type', 'application/json; charset=utf-8')])
         return [ bytes(json.dumps(result), encoding='utf8') ]
 
@@ -47,7 +48,7 @@ class HotJBWorker:
         '''
         '''
 
-        jieba.enable_paddle()
+        # jieba.enable_paddle()
 
         with make_server('127.0.0.1', self.port, self._work_respond) as httpd:
             httpd.serve_forever()

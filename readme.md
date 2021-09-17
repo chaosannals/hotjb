@@ -4,6 +4,9 @@
 docker build -t chaosannals/hotjb:0.1.0 .
 ```
 
+```bash
+python setup.py bdist_msi
+```
 
 注：排除打包的 cx_Freeze 。
 

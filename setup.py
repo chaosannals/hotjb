@@ -10,6 +10,13 @@ setup(
     name = "hotjb",
     version = "0.1.0",
     description = "yet a jieba http server",
-    options = {"build_exe": build_exe_options},
-    executables = [Executable("app.py")]
+    executables = [
+        Executable(
+            "app.py",
+            copyright="Copyright (C) 2021 ChaosAnnals",
+        ),
+    ],
+    options = {
+        "build_exe": build_exe_options
+    }
 )

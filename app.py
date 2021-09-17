@@ -1,6 +1,7 @@
 import os
 import sys
 import asyncio
+from multiprocessing import freeze_support
 from loguru import logger
 from dotenv import load_dotenv
 from hotjb.server import HotJBServer
@@ -33,6 +34,7 @@ async def main(loop):
     return server
 
 if __name__ == '__main__':
+    freeze_support()
     try:
         load_dotenv()
         loop = asyncio.get_event_loop()
