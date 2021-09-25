@@ -5,6 +5,7 @@ from multiprocessing import freeze_support
 from loguru import logger
 from dotenv import load_dotenv
 from hotjb.server import HotJBServer
+from hotjb.entity import HotJBEntity
 
 async def main(loop):
     '''
@@ -22,12 +23,14 @@ async def main(loop):
         level='INFO'
     )
     logger.add(
-        'runtime/logs/{time}.log',
+        'runtime/logs/{time:YYYY-MM-DD}.log',
         level=log_level,
         rotation='00:00',
         retention='7 days',
     )
     logger.info(f'server: {host}:{port}')
+    entity = HotJBEntity('sqlite:///hotjb.db')
+    entity.create_all()
     server = HotJBServer(worker_count)
     server.ready()
     await server.serve(loop, host, port)

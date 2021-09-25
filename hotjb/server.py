@@ -65,6 +65,7 @@ class HotJBServer:
 
     async def dispatch(self) -> HotJBTransfer:
         '''
+        分配转发器。
         '''
 
         start_time = time_ns()
