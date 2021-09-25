@@ -11,13 +11,14 @@ class HotJBWorker:
     处理类
     '''
 
-    def __init__(self, port):
+    def __init__(self, port, keyword_save=True):
         '''
         初始化。
         '''
 
         self.idle = True
         self.port = port
+        self.keyword_save = keyword_save
         self.process = Process(target=self._work_process)
         self.entity = HotJBEntity
 
@@ -45,11 +46,9 @@ class HotJBWorker:
         data = json.loads(content)
         result = list(jieba.cut_for_search(data['text']))
 
-        # 存入词典
-        if data['save']:
-            s = self.entity.make_session()
-            
-            
+        # 记录关键词
+        if self.keyword_save:
+            logger.info(f'keyword: {result}')    
 
         start_response('200 OK', [('Content-Type', 'application/json; charset=utf-8')])
         return [ bytes(json.dumps(result), encoding='utf8') ]
@@ -66,17 +65,18 @@ class HotJBWorker:
             level=log_level,
             rotation='00:00',
             retention='7 days',
+            encoding='utf8'
         )
         try:
             # 加载扩展字典
-            edp = 'asset/extdict.txt'
+            edp = 'config/extdict.txt'
             if os.path.isfile(edp):
                 jieba.load_userdict(edp)
                 logger.info(f'load userdict: {edp}')
             
             # 开启服务
-            logger.info(f'worker {self.port} start server:')
             with make_server('127.0.0.1', self.port, self._work_respond) as httpd:
+                logger.info(f'worker {self.port} start server:')
                 httpd.serve_forever()
         except Exception as e:
             logger.error(e)

@@ -10,7 +10,7 @@ class HotJBServer:
     分发服务端服务
     '''
 
-    def __init__(self, worker_count=6, out_time=10.0):
+    def __init__(self, worker_count=6, out_time=10.0, keyword_save=True):
         '''
         初始化，设置和生成 worker 池。
         '''
@@ -25,7 +25,8 @@ class HotJBServer:
             worker = HotJBWorker(30001 + i)
             self.workers.append(worker)
             logger.info(f'{i} new worker {worker.port}')
-
+        
+        self.keyword_save= keyword_save
         self.out_time = out_time
 
     def ready(self):
@@ -74,7 +75,7 @@ class HotJBServer:
                 if worker.idle:
                     end_time = time_ns()
                     duration = (end_time - start_time) / 1000000000.0
-                    logger.info(f'transfer {duration:.5f}s: {worker.port}')
+                    logger.debug(f'transfer {duration:.5f}s: {worker.port}')
                     return HotJBTransfer(worker)
             end_time = time_ns()
             duration = (end_time - start_time) / 1000000000.0

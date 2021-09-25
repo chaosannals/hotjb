@@ -12,10 +12,8 @@ async def main(loop):
     主函数。
     '''
 
+    # 初始化及日志配置
     debug = os.getenv('HOTJB_DEBUG', False)
-    host = os.getenv('HOTJB_HOST', '0.0.0.0')
-    port = os.getenv('HOTJB_PORT', 30000)
-    worker_count = os.getenv('HOTJB_WORKER_COUNT', 5)
     log_level = os.getenv('HOTJB_LOG_LEVEL', 'TRACE' if debug else 'INFO')
     logger.remove()
     logger.add(
@@ -27,11 +25,22 @@ async def main(loop):
         level=log_level,
         rotation='00:00',
         retention='7 days',
+        encoding='utf8'
     )
-    logger.info(f'server: {host}:{port}')
+    logger.info(f'mode: {"debug" if debug else "release"}')
+
+    # 启动服务
+    host = os.getenv('HOTJB_HOST', '0.0.0.0')
+    port = os.getenv('HOTJB_PORT', 30000)
+    worker_count = os.getenv('HOTJB_WORKER_COUNT', 6)
+    keyword_save = os.getenv('HOTJB_KEYWORD_SAVE', True)
+    logger.info(f'server({worker_count}): {host}:{port}')
     entity = HotJBEntity('sqlite:///hotjb.db')
     entity.create_all()
-    server = HotJBServer(worker_count)
+    server = HotJBServer(
+        worker_count=worker_count,
+        keyword_save=keyword_save
+    )
     server.ready()
     await server.serve(loop, host, port)
     return server

@@ -7,7 +7,6 @@ services:
     ports: 
       - 30000:30000
     volumes:
-      - ./asset:/app/asset
       - ./config:/app/config
       - ./runtime:/app/runtime
     networks: 
