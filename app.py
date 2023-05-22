@@ -7,6 +7,7 @@ from dotenv import load_dotenv
 from hotjb.server import HotJBServer
 from hotjb.entity import HotJBEntity
 
+@logger.catch
 async def main(loop):
     '''
     主函数。

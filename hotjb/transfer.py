@@ -3,6 +3,7 @@ from .worker import HotJBWorker
 
 class HotJBTransfer:
     '''
+    请求转发器
     '''
 
     def __init__(self, worker: HotJBWorker):
